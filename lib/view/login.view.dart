@@ -69,7 +69,7 @@ class LoginView extends StatelessWidget {
 
                       onPressed: () async {
 
-                        if(loginController.text=="" || senhaController.text==""){
+                        if(loginController.text.trim()=="" || senhaController.text.trim()==""){
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -111,7 +111,8 @@ class LoginView extends StatelessWidget {
                               );
                             },
                           );
-                          }}
+                          }
+                          }
                       },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(GlobalColors.mainColor),
