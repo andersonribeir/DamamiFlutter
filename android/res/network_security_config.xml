@@ -1,4 +1,0 @@
-<domain-config cleartextTrafficPermitted="true">
-    <domain includeSubdomains="true">techwayinfo.com.br</domain>
-    <domain includeSubdomains="true">alphapi.techwayinfo.com.br</domain>
-</domain-config>
