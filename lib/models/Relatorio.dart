@@ -6,14 +6,7 @@ class Relatorio {
   final int ano;
   final String nomeRelatorio;
   final List<DadosGraficos> dadosGraficosList;
-  final customColors = <Color>[
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.orange,
-    Colors.purple,
-    Colors.yellow,
-  ];
+
   Relatorio(
       {required this.ano,
         required this.nomeRelatorio,
