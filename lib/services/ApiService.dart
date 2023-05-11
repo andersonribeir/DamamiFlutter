@@ -29,4 +29,19 @@ class ApiService{
     }
 
   }
+  Future<String> GetChart(String chart,String unidade, String anoInicial,String anoFinal) async {
+
+    HttpClient httpClient = HttpClient();
+    httpClient.badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
+    HttpClientRequest request = await httpClient.getUrl(Uri.parse("${Configs.urlApi}api/Chart/GetChartData/${chart}/${unidade}/${anoInicial}/${anoFinal}"));
+
+    HttpClientResponse response = await request.close();
+    String responseBody = await response.transform(utf8.decoder).join();
+    if (response.statusCode == HttpStatus.ok) {
+      return responseBody;
+    }else{
+      return "";
+    }
+    return "";
+  }
 }

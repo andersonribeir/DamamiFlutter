@@ -91,7 +91,7 @@ class LoginView extends StatelessWidget {
                         }else
                           {
                         if(await verificaLogin(loginController.text,senhaController.text)){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const MainPage()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
                         }
                         else {
                           showDialog(
