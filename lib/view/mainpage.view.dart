@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:damamiflutter/services/ApiService.dart';
@@ -7,6 +8,7 @@ import 'package:damamiflutter/models/DadosGraficos.dart';
 import 'package:damamiflutter/utils/global.colors.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:intl/intl.dart';
+import 'dart:collection';
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
@@ -16,8 +18,8 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   late Future<List<Relatorio>> _cachosColhidos;
-
   late Future<List<Relatorio>> _cachosVendidos;
+  late Future<String> _vendasClientes;
   double inicio = 2021;
   double fim = 2023;
 
@@ -27,27 +29,29 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _cachosColhidos = _fetchRelatorios("1", "0", inicio.toInt().toString(), fim.toInt().toString());
     _cachosVendidos = _fetchRelatorios("2","0",inicio.toInt().toString(),fim.toInt().toString());
-  }
+    _vendasClientes = _fetchRelatoriosDinamicos("9","0",inicio.toInt().toString(),fim.toInt().toString());
 
-  Future<List<Relatorio>> _fetchRelatorios(String relatorio, String unidade,
-      String anoInicial, String anoFinal) async {
+  }
+  Future<List<Relatorio>> _fetchRelatorios(String relatorio, String unidade, String anoInicial, String anoFinal) async {
     final apiService = ApiService();
     final chartDataString =
-        await apiService.GetChart(relatorio, unidade, anoInicial, anoFinal);
+    await apiService.GetChart(relatorio, unidade, anoInicial, anoFinal);
     final jsonData = json.decode(chartDataString);
     final chartDataList = jsonData is List ? jsonData : [jsonData];
     return chartDataList
         .map((chartData) => Relatorio(
-              ano: chartData['ano'],
-              nomeRelatorio: chartData['nomeRelatorio'],
-              dadosGraficosList: (chartData['dadosGraficosList'] as List)
-                  .map((dadosGraficos) => DadosGraficos(
-                        key: dadosGraficos['key'],
-                        value: dadosGraficos['value'],
-                      ))
-                  .toList(),
-            ))
+      ano: chartData['ano'],
+      nomeRelatorio: chartData['nomeRelatorio'],
+      dadosGraficosList: (chartData['dadosGraficosList'] as List)
+          .map((dadosGraficos) => DadosGraficos(
+        key: dadosGraficos['key'],
+        value: dadosGraficos['value'],
+      ))
+          .toList(),
+    ))
         .toList();
+  }
+  Future<String> _fetchRelatoriosDinamicos(String relatorio, String unidade, String anoInicial, String anoFinal) async {final apiService = ApiService();    return await apiService.GetChart(relatorio, unidade, anoInicial, anoFinal);
   }
 
   @override
@@ -56,6 +60,8 @@ class _MainPageState extends State<MainPage> {
         MediaQuery.of(context).platformBrightness;
     final Orientation orientation = MediaQuery.of(context).orientation;
     bool isDark = brightnessValue == Brightness.dark;
+
+
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -67,6 +73,7 @@ class _MainPageState extends State<MainPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              //Cachos Colhidos
               const SizedBox(height: 140),
               Padding(
                 padding: EdgeInsets.only(left: 10),
@@ -108,40 +115,40 @@ class _MainPageState extends State<MainPage> {
                             iconWidth: 15,
                             toggleSeriesVisibility: true),
                         tooltipBehavior:
-                            TooltipBehavior(enable: true),
+                        TooltipBehavior(enable: true),
                         series: snapshot.data!
                             .map(
                               (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
-                                dataSource: relatorio.dadosGraficosList,
-                                xValueMapper: (dadosGraficos, _) =>
-                                    dadosGraficos.key,
-                                yValueMapper: (dadosGraficos, _) =>
-                                    dadosGraficos.value,
-                                legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[
-                                        relatorio.ano %
-                                            GlobalColors.graphicColors.length]
-                                    .withOpacity(1)
-                                    .withOpacity(0.3),
-                                borderColor: GlobalColors.graphicColors[
-                                        relatorio.ano %
-                                            GlobalColors.graphicColors.length]
-                                    .withOpacity(1),
-                                borderWidth: 2,
-                                enableTooltip: true,
-                                legendIconType: LegendIconType.circle,
-                                markerSettings: MarkerSettings(
-                                  isVisible: true,
-                                  color: GlobalColors.graphicColors[
-                                      relatorio.ano %
-                                          GlobalColors.graphicColors.length],
-                                  shape: DataMarkerType.circle,
-                                  height: 6,
-                                  width: 6,
-                                ),
-                              ),
-                            )
+                            name: relatorio.nomeRelatorio,
+                            dataSource: relatorio.dadosGraficosList,
+                            xValueMapper: (dadosGraficos, _) =>
+                            dadosGraficos.key,
+                            yValueMapper: (dadosGraficos, _) =>
+                            dadosGraficos.value,
+                            legendItemText: relatorio.ano.toString(),
+                            color: GlobalColors.graphicColors[
+                            relatorio.ano %
+                                GlobalColors.graphicColors.length]
+                                .withOpacity(1)
+                                .withOpacity(0.3),
+                            borderColor: GlobalColors.graphicColors[
+                            relatorio.ano %
+                                GlobalColors.graphicColors.length]
+                                .withOpacity(1),
+                            borderWidth: 2,
+                            enableTooltip: true,
+                            legendIconType: LegendIconType.circle,
+                            markerSettings: MarkerSettings(
+                              isVisible: true,
+                              color: GlobalColors.graphicColors[
+                              relatorio.ano %
+                                  GlobalColors.graphicColors.length],
+                              shape: DataMarkerType.circle,
+                              height: 6,
+                              width: 6,
+                            ),
+                          ),
+                        )
                             .toList(),
                       );
                     } else if (snapshot.hasError) {
@@ -226,151 +233,151 @@ class _MainPageState extends State<MainPage> {
               ),
               const SizedBox(height: 2,),
               ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 120 * (fim-inicio)),
-              child: FutureBuilder<List<Relatorio>>(
-                future: _cachosColhidos,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final relatorios = snapshot.data!;
-                    return SfDataGrid(
-                      horizontalScrollPhysics: NeverScrollableScrollPhysics(),
-                      verticalScrollPhysics: NeverScrollableScrollPhysics(),
-                      source: _RelatorioDataSource(relatorios,context),
-                      headerGridLinesVisibility: GridLinesVisibility.both,
-                      gridLinesVisibility: GridLinesVisibility.both,
-                      
-
-                      columns: [
-                        GridColumn(
-                            columnName: 'ano',
-                            label: Container(
-                              padding: EdgeInsets.symmetric(vertical: 10.0),
-                              alignment: Alignment.center,
-                              child: Text('Ano'),
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 -20),
-                        GridColumn(
-                            columnName: 'jan',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Jan'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'fev',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Fev'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'mar',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Mar'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'abr',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Abr'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'mai',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              child: Text('Mai'),
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'jun',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Jun'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'jul',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Jul'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'ago',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Ago'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'set',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Set'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'out',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Out'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'nov',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              child: Text('Nov'),
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'dez',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Dez'),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
-                        GridColumn(
-                            columnName: 'total',
-                            label: Container(
-
-                              alignment: Alignment.center,
-                              color: Color.fromRGBO(191, 245, 249, 0.3),
-                              child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 12 : 13),),
-                            ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                constraints: BoxConstraints(maxHeight: 120 * (fim-inicio)),
+                child: FutureBuilder<List<Relatorio>>(
+                  future: _cachosColhidos,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final relatorios = snapshot.data!;
+                      return SfDataGrid(
+                        horizontalScrollPhysics: NeverScrollableScrollPhysics(),
+                        verticalScrollPhysics: NeverScrollableScrollPhysics(),
+                        source: _RelatorioDataSource(relatorios,context),
+                        headerGridLinesVisibility: GridLinesVisibility.both,
+                        gridLinesVisibility: GridLinesVisibility.both,
 
 
-                      ],
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                },
-              ),),
+                        columns: [
+                          GridColumn(
+                              columnName: 'ano',
+                              label: Container(
+                                padding: EdgeInsets.symmetric(vertical: 10.0),
+                                alignment: Alignment.center,
+                                child: Text('Ano'),
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 -20),
+                          GridColumn(
+                              columnName: 'jan',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Jan'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'fev',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Fev'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'mar',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Mar'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'abr',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Abr'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'mai',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                child: Text('Mai'),
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'jun',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Jun'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'jul',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Jul'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'ago',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Ago'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'set',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Set'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'out',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Out'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'nov',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                child: Text('Nov'),
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'dez',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Dez'),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
+                          GridColumn(
+                              columnName: 'total',
+                              label: Container(
+
+                                alignment: Alignment.center,
+                                color: Color.fromRGBO(191, 245, 249, 0.3),
+                                child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 12 : 13),),
+                              ),width: MediaQuery.of(context).size.width.toDouble()/14 + 20/14),
 
 
+                        ],
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),),
 
+
+              //Quilos Vendidos
               Padding(
                 padding: EdgeInsets.only(left: 10),
                 child: Text(
-                  "Cachos Vendidos",
+                  "Quilos Vendidos",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : Colors.black),
@@ -458,7 +465,7 @@ class _MainPageState extends State<MainPage> {
               const SizedBox(height: 15),
               Padding(
                 padding: EdgeInsets.only(left: 10),
-                child: Text("Cachos Vendidos",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
+                child: Text("Quilos Vendidos",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
               ),
               const SizedBox(height: 2,),
               ConstrainedBox(
@@ -521,7 +528,7 @@ class _MainPageState extends State<MainPage> {
               ),
               Padding(
                 padding: EdgeInsets.only(left: 10),
-                child: Text("Cachos Vendidos",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
+                child: Text("Quilos Vendidos",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
               ),
               const SizedBox(height: 2,),
               ConstrainedBox(
@@ -663,20 +670,104 @@ class _MainPageState extends State<MainPage> {
                     }
                   },
                 ),),
+              ConstrainedBox(constraints: BoxConstraints(maxHeight: 120 * (fim-inicio)),
+              child: FutureBuilder<String>(
+                future: _vendasClientes,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final jsonString = snapshot.data;
+                    if (jsonString == null) {
+                      return const Center(
+                        child: Text('No data found'),
+                      );
+                    }
+                    final List<dynamic> data = json.decode(jsonString);
 
+                    final List<Map<String, dynamic>> dataList = data.map((item) {
+                      final Map<String, dynamic> map = {};
+                      for (final field in item) {
+                        map[field['key']] = field['value'];
+                      }
+                      return map;
+                    }).toList();
 
+                    final List<GridColumn> columns = List<GridColumn>.from(data[0].map((field) {
+                      final String columnName = field['key'];
+                      return GridColumn(columnName: columnName,
+                          width: MediaQuery.of(context).size.width.toDouble()/dataList[0].length,
+                          label: Container(
+                        padding: EdgeInsets.symmetric(vertical: 10.0),
+                        alignment: Alignment.center,
+                        color: const Color.fromRGBO(191, 245, 249, 0.3),
+                        child: Text(columnName,style: const TextStyle(fontSize: 12),),
+                      ));
+                    }));
 
+                    return SfDataGrid(
+                      source: _DataSource(dataList),
 
+                      verticalScrollPhysics: NeverScrollableScrollPhysics(),
+                      headerGridLinesVisibility: GridLinesVisibility.both,
+                      gridLinesVisibility: GridLinesVisibility.both,
 
+                      columns: columns,
 
-
-
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('${snapshot.error}'),
+                    );
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
+              ),)
 
             ],
           )),
     );
   }
 
+}
+
+class _DataSource extends DataGridSource {
+  _DataSource(this._dataList);
+
+  final List<Map<String, dynamic>> _dataList;
+  int _rowCount = 0;
+
+  @override
+  List<DataGridRow> get rows => _dataList.map((data) {
+    final cells = data.entries.map((entry) {
+      final key = entry.key.toString();
+      final value = key == "Ano"?entry.value.toString():  double.parse(entry.value.toString().replaceAll(",", "."));
+
+      final formattedValue =  value is num
+          ? NumberFormat('###,##0.00', 'pt_BR').format(value)
+          : value.toString();
+      return DataGridCell<String>(
+        columnName: entry.key,
+        value: formattedValue,
+      );
+    }).toList();
+    return DataGridRow(cells: cells);
+  }).toList();
+
+  @override
+  DataGridRowAdapter buildRow(DataGridRow row) {
+    final isEven = _rowCount.isEven;
+    _rowCount++;
+    return DataGridRowAdapter(
+      color: isEven ? Color.fromRGBO(236, 236, 236, 1) : Colors.white,
+      cells: row.getCells().map<Widget>((dataGridCell) {
+        return Center(
+          child: Text(dataGridCell.value.toString()),
+        );
+      }).toList(),
+    );
+  }
 }
 class _RelatorioDataSource extends DataGridSource {
   var context;
@@ -734,7 +825,7 @@ class _RelatorioDataSource extends DataGridSource {
     final isEven = index % 2 == 0;
     return DataGridRowAdapter(color: isEven ? Color.fromRGBO(236, 236, 236, 1) : Colors.white,cells: row.getCells().map<Widget>((e) {
       return Container(
-          
+
           alignment: Alignment.center,
           child: e.columnName == 'ano'
               ? Text(e.value.toString(),style: TextStyle(fontSize: orientation == Orientation.portrait ? 10 : 13))
@@ -742,6 +833,3 @@ class _RelatorioDataSource extends DataGridSource {
     }).toList());
   }
 }
-
-
-
