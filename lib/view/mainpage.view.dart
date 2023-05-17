@@ -53,7 +53,11 @@ class _MainPageState extends State<MainPage> {
   }
   Future<String> _fetchRelatoriosDinamicos(String relatorio, String unidade, String anoInicial, String anoFinal) async {final apiService = ApiService();    return await apiService.GetChart(relatorio, unidade, anoInicial, anoFinal);
   }
-
+  List<Relatorio> _mapRelatorios(String jsonInput){
+    final List<Relatorio> teste = [];
+    final meujson = json.encode(jsonInput);
+    return teste;
+  }
   @override
   Widget build(BuildContext context) {
     final Brightness brightnessValue =
@@ -396,14 +400,12 @@ class _MainPageState extends State<MainPage> {
                         backgroundColor: Colors.white,
                         primaryXAxis: CategoryAxis(
                           labelStyle: const TextStyle(
-                            color: Colors
-                                .black, // Defina a cor do texto do eixo X aqui
+                            color: Colors.black, // Defina a cor do texto do eixo X aqui
                           ),
                         ),
                         primaryYAxis: NumericAxis(
                           labelStyle: const TextStyle(
-                            color: Colors
-                                .black, // Defina a cor do texto do eixo X aqui
+                            color: Colors.black, // Defina a cor do texto do eixo X aqui
                           ),
                         ),
                         legend: Legend(
@@ -670,6 +672,89 @@ class _MainPageState extends State<MainPage> {
                     }
                   },
                 ),),
+
+
+
+              Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text("Resultados de Vendas por Cliente (em R\$)",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
+              ),
+              const SizedBox(height: 2,),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 300),
+                child: FutureBuilder<String>(
+                  future: _vendasClientes,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final List<Relatorio> relatorioMap = [];
+                      return SfCartesianChart(
+                        backgroundColor: Colors.white,
+                        primaryXAxis: CategoryAxis(
+                          labelStyle: const TextStyle(
+                            color: Colors.black, // Defina a cor do texto do eixo X aqui
+                          ),
+                        ),
+                        primaryYAxis: NumericAxis(
+                          labelStyle: const TextStyle(
+                            color: Colors.black, // Defina a cor do texto do eixo X aqui
+                          ),
+                        ),
+                        legend: Legend(
+                            isVisible: true,
+                            position: LegendPosition.bottom,
+                            textStyle: const TextStyle(color: Colors.black),
+                            iconHeight: 15,
+                            iconWidth: 15,
+                            toggleSeriesVisibility: true),
+                        tooltipBehavior:
+                        TooltipBehavior(enable: true),
+                        series: relatorioMap!
+                            .map(
+                              (relatorio) => AreaSeries<DadosGraficos, String>(
+                            name: relatorio.nomeRelatorio,
+                            dataSource: relatorio.dadosGraficosList,
+                            xValueMapper: (dadosGraficos, _) =>
+                            dadosGraficos.key,
+                            yValueMapper: (dadosGraficos, _) =>
+                            dadosGraficos.value,
+                            legendItemText: relatorio.ano.toString(),
+                            color: GlobalColors.graphicColors[
+                            relatorio.ano %
+                                GlobalColors.graphicColors.length]
+                                .withOpacity(1)
+                                .withOpacity(0.3),
+                            borderColor: GlobalColors.graphicColors[
+                            relatorio.ano %
+                                GlobalColors.graphicColors.length]
+                                .withOpacity(1),
+                            borderWidth: 2,
+                            enableTooltip: true,
+                            legendIconType: LegendIconType.circle,
+                            markerSettings: MarkerSettings(
+                              isVisible: true,
+                              color: GlobalColors.graphicColors[
+                              relatorio.ano %
+                                  GlobalColors.graphicColors.length],
+                              shape: DataMarkerType.circle,
+                              height: 6,
+                              width: 6,
+                            ),
+                          ),
+                        )
+                            .toList(),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('${snapshot.error}'),
+                      );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
+                ),
+              ),
               ConstrainedBox(constraints: BoxConstraints(maxHeight: 120 * (fim-inicio)),
               child: FutureBuilder<String>(
                 future: _vendasClientes,
