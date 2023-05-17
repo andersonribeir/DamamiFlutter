@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:damamiflutter/utils/global.images.dart';
 import 'package:damamiflutter/view/login.view.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 
 class SplashView extends StatelessWidget {
   const SplashView({Key? key}) : super(key: key);

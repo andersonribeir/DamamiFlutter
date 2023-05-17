@@ -3,9 +3,7 @@ import 'dart:io';
 
 import 'package:damamiflutter/models/Login.dart';
 import 'package:damamiflutter/utils/global.configs.dart';
-import 'package:http/http.dart' as http;
 
-import '../models/Login.dart';
 
 class ApiService{
 
@@ -21,7 +19,6 @@ class ApiService{
     request.write(jsonBody);
 
     HttpClientResponse response = await request.close();
-    String responseBody = await response.transform(utf8.decoder).join();
     if (response.statusCode == HttpStatus.ok) {
       return true;
     }else{
@@ -42,6 +39,19 @@ class ApiService{
     }else{
       return "";
     }
-    return "";
+  }
+  Future<String> GetChartDecimal(String chart,String unidade, String anoInicial,String anoFinal) async {
+
+    HttpClient httpClient = HttpClient();
+    httpClient.badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
+    HttpClientRequest request = await httpClient.getUrl(Uri.parse("${Configs.urlApi}api/Chart/GetChartDataDecimal/${chart}/${unidade}/${anoInicial}/${anoFinal}"));
+
+    HttpClientResponse response = await request.close();
+    String responseBody = await response.transform(utf8.decoder).join();
+    if (response.statusCode == HttpStatus.ok) {
+      return responseBody;
+    }else{
+      return "";
+    }
   }
 }

@@ -1,11 +1,8 @@
-import 'dart:ui';
-
 import 'package:damamiflutter/models/DadosGraficos.dart';
-import 'package:flutter/material.dart';
 class Relatorio {
-  final int ano;
-  final String nomeRelatorio;
-  final List<DadosGraficos> dadosGraficosList;
+    int ano;
+   String nomeRelatorio;
+   List<DadosGraficos> dadosGraficosList;
 
   Relatorio(
       {required this.ano,

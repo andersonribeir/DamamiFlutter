@@ -1,4 +1,4 @@
-import 'dart:math';
+
 
 import 'package:damamiflutter/services/ApiService.dart';
 import 'package:damamiflutter/utils/global.colors.dart';
@@ -7,7 +7,7 @@ import 'package:damamiflutter/view/mainpage.view.dart';
 
 import 'package:damamiflutter/view/widgets/global.textform.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 
 class LoginView extends StatelessWidget {
   final TextEditingController loginController = TextEditingController();
@@ -137,7 +137,7 @@ class LoginView extends StatelessWidget {
                       'Sistema de Controle de Produção de Bananas',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 19,
+                        fontSize: 18,
                         fontFamily: 'Roboto',
                         color: isDark ? Colors.white : Colors.black,
                       ),
