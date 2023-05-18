@@ -39,19 +39,15 @@ class _MainPageState extends State<MainPage> {
   String fimPesquisa = (DateTime.now().year).toString();
   double inicio = (DateTime.now().year-2).toDouble();
   double fim = (DateTime.now().year).toDouble();
-  String selectedOption = "0";
+  String selectedOption = "";
+  int selectedIndex = 0;
 
-  final List<String> options = [ "Todas",
-    'Option 1',
-    'Option 2',
-    'Option 3',
-    'Option 4',
-    'Option 5',
-  ];
+  late List<String> options = ["Todas"];
 
   @override
   void initState() {
     super.initState();
+    selectedOption = "Todas";
     anoInicialInput.text = inicioPesquisa;
     anoFinalInput.text = fimPesquisa;
     _cachosColhidos = _fetchRelatorios("1", "0", inicioPesquisa, fimPesquisa);
@@ -135,68 +131,56 @@ class _MainPageState extends State<MainPage> {
     return relatorios;
   }
 
-  void _openStringPicker() {
+  void _openStringPicker(int initialIndex, Function(String, int) onSelectionChanged) {
     String selectedOptionTemp = selectedOption; // Create a temporary variable to store the selected option
-
+    int selectedIndexTemp = selectedIndex;
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return WillPopScope(
-          onWillPop: () async {
-            // Update the selected option with the temporary value when tapping outside the picker
-            setState(() {
-              selectedOption = selectedOptionTemp;
-            });
-            print(selectedOption);
-            return true;
-          },
-          child: Container(
-            height: 250,
-            child: Stack(
-              children: [
-                CupertinoPicker(
-                  itemExtent: 50.0,
-                  onSelectedItemChanged: (int index) {
-                    setState(() {
-
-                      selectedOptionTemp = options[index];
-                      if(index == 0){selectedOptionTemp = 'Todas';}
-                    });
-                  },
-                  children: options.map((String option) {
-                    return Text(
-                      option,
-                      style: TextStyle(fontSize: 20),
-                    );
-                  }).toList(),
+        return Container(
+          height: 250,
+          child: Stack(
+            children: [
+              CupertinoPicker(
+                scrollController: FixedExtentScrollController(
+                  initialItem: initialIndex,
                 ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedOption = selectedOptionTemp; // Assign the selected option to the original variable
-                      });
-                      print(selectedOption);
-                      Navigator.pop(context); // Close the bottom sheet
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      color: Colors.red,
-                      child: const Text(
-                        'Pronto',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+                itemExtent: 50.0,
+                onSelectedItemChanged: (int index) {
+                  selectedOptionTemp = options[index];
+                  selectedIndexTemp = index;
+                  onSelectionChanged(selectedOptionTemp, selectedIndexTemp);
+                },
+                children: options.map((String option) {
+                  return Text(
+                    option,
+                    style: TextStyle(fontSize: 20),
+                  );
+                }).toList(),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    onSelectionChanged(selectedOptionTemp, selectedIndexTemp);
+                    Navigator.pop(context); // Close the bottom sheet
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    color: Colors.transparent,
+                    child:  Text(
+                      'Pronto',
+                      style: TextStyle(
+                        color: GlobalColors.mainColor.withOpacity(0.8),
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -239,15 +223,33 @@ class _MainPageState extends State<MainPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      TextButton(
+                      Container(
+                        height: 33,
+                        width: 130,
+                        child: DecoratedBox(
+                              decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isDark? Colors.white.withOpacity(0.4): Colors.black.withOpacity(0.2),
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(4.0),
+                            ),
+                                child: TextButton(
                         onPressed: () {
                           // Display the picker when tapped
-                          _openStringPicker();
+                          _openStringPicker(selectedIndex, (selectedOption, selectedIndex) {
+                            setState(() {
+                              this.selectedOption = selectedOption;
+                              this.selectedIndex = selectedIndex;
+                            });
+                          });
                         },
-                        child: Text(
-                          'Select Option',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                                    child: Text(
+                                      selectedOption,
+                                      style: TextStyle(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                                    ),
+                    ),
+        ),
                       ),
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -263,7 +265,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ),
                       const SizedBox(width: 17,),
-                      const Text('a',style: TextStyle(fontWeight: FontWeight.bold),),
+                      Text('a',style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white: Colors.black),),
                       const SizedBox(width: 10,),
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
@@ -285,7 +287,7 @@ class _MainPageState extends State<MainPage> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: isDark ? Colors.grey.withOpacity(0.1) : Colors.white.withOpacity(0.1),
                               spreadRadius: 2,
                               blurRadius: 5,
                               offset: Offset(0, 2), // changes the position of the shadow
@@ -294,6 +296,7 @@ class _MainPageState extends State<MainPage> {
                         ),
                         child: IconButton(
                           icon: Icon(Icons.search),
+                          color: isDark ? Colors.white : Colors.black,
                           onPressed: () {
                             bool erro = false;
                             FocusScope.of(context).requestFocus(FocusNode());
@@ -378,7 +381,7 @@ class _MainPageState extends State<MainPage> {
                 const SizedBox(height: 10),
 
 
-//Cachos Colhidos
+                //Cachos Colhidos
                 Padding(
                   padding: EdgeInsets.only(left: 10),
                   child: Text(
@@ -570,14 +573,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -585,7 +588,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -593,7 +596,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -601,7 +604,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -610,14 +613,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -625,7 +628,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -633,7 +636,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -641,7 +644,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -649,7 +652,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -658,14 +661,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -673,7 +676,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 12 : 13),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -880,14 +883,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -895,7 +898,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -903,7 +906,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -911,7 +914,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -920,14 +923,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -935,7 +938,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -943,7 +946,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -951,7 +954,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -959,7 +962,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -968,14 +971,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -983,7 +986,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -1191,14 +1194,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1206,7 +1209,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1214,7 +1217,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1222,7 +1225,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1231,14 +1234,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1246,7 +1249,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1254,7 +1257,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1262,7 +1265,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1270,7 +1273,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1279,14 +1282,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1294,7 +1297,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -1504,14 +1507,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1519,7 +1522,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1527,7 +1530,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1535,7 +1538,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1544,14 +1547,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1559,7 +1562,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1567,7 +1570,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1575,7 +1578,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1583,7 +1586,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1592,14 +1595,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -1609,7 +1612,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Média',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5)
 
@@ -1816,14 +1819,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1831,7 +1834,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1839,7 +1842,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1847,7 +1850,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1856,14 +1859,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1871,7 +1874,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1879,7 +1882,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1887,7 +1890,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1895,7 +1898,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -1904,14 +1907,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -1921,7 +1924,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Média',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5)
 
@@ -2129,14 +2132,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2144,7 +2147,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2152,7 +2155,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2160,7 +2163,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2169,14 +2172,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2184,7 +2187,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2192,7 +2195,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2200,7 +2203,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2208,7 +2211,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2217,14 +2220,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -2234,7 +2237,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Média',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5)
 
@@ -2443,14 +2446,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2458,7 +2461,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2466,7 +2469,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2474,7 +2477,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2483,14 +2486,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2498,7 +2501,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2506,7 +2509,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2514,7 +2517,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2522,7 +2525,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2531,14 +2534,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -2548,7 +2551,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5)
 
@@ -2756,14 +2759,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2771,7 +2774,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2779,7 +2782,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2787,7 +2790,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2796,14 +2799,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2811,7 +2814,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2819,7 +2822,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2827,7 +2830,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2835,7 +2838,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -2844,14 +2847,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
@@ -2861,7 +2864,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5)
 
@@ -2987,7 +2990,7 @@ class _MainPageState extends State<MainPage> {
                               label: Container(
                                 padding: EdgeInsets.symmetric(vertical: 10.0),
                                 alignment: Alignment.center,
-                                color: const Color.fromRGBO(191, 245, 249, 0.3),
+                                color: GlobalColors.mainColor.withOpacity(0.8),
                                 child: Center(child: Text(columnName,style: const TextStyle(fontSize: 12),textAlign: TextAlign.center,)),
                               ));
                         }));
@@ -3206,14 +3209,14 @@ class _MainPageState extends State<MainPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10.0),
                                   alignment: Alignment.center,
                                   child: Text('Ano'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jan',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jan'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3221,7 +3224,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Fev'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3229,7 +3232,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Mar'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3237,7 +3240,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Abr'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3246,14 +3249,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Mai'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'jun',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jun'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3261,7 +3264,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Jul'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3269,7 +3272,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Ago'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3277,7 +3280,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Set'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3285,7 +3288,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Out'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3294,14 +3297,14 @@ class _MainPageState extends State<MainPage> {
 
                                   alignment: Alignment.center,
                                   child: Text('Nov'),
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
                                 columnName: 'dez',
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Dez'),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
                             GridColumn(
@@ -3309,7 +3312,7 @@ class _MainPageState extends State<MainPage> {
                                 label: Container(
 
                                   alignment: Alignment.center,
-                                  color: Color.fromRGBO(191, 245, 249, 0.3),
+                                  color: GlobalColors.mainColor.withOpacity(0.8),
                                   child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 14 : 15),),
                                 ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
 
