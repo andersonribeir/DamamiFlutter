@@ -27,6 +27,8 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+dependency_overrides:
+  syncfusion_flutter_core: 21.2.3
 dependencies:
   flutter:
     sdk: flutter
@@ -38,8 +40,9 @@ dependencies:
   get: ^4.6.5
   hexcolor: ^3.0.1
   http: ^0.13.5
-  syncfusion_flutter_datagrid: ^21.2.4
-  syncfusion_flutter_charts: ^21.2.4
+  syncfusion_flutter_datagrid: 21.2.3
+  syncfusion_flutter_charts: 21.2.3
+  device_info: ^2.0.0
 
 dev_dependencies:
   flutter_test:
