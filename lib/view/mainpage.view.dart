@@ -263,6 +263,8 @@ class _MainPageState extends State<MainPage> {
                             children: [
                               FutureBuilder<List<Unidade>>(future: _unidades,builder: (context, snapshot) {
                                 if (snapshot.hasData) {
+                                  options = [];
+                                  indexOptions = [];
                                   snapshot.data!.forEach((unidade) {
                                     options.add(unidade.nome);
                                     indexOptions.add(unidade.id.toString());
@@ -295,7 +297,7 @@ class _MainPageState extends State<MainPage> {
                                         ),
                                         child: Text(
                                           selectedOption,
-                                          style: TextStyle(fontSize: 16, color: isDark ? Colors.white : Colors.black),
+                                          style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black),
                                         ),
                                       ),
                                     ),
