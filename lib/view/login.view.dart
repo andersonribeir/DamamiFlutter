@@ -1,5 +1,3 @@
-
-
 import 'package:damamiflutter/services/ApiService.dart';
 import 'package:damamiflutter/utils/global.colors.dart';
 import 'package:damamiflutter/utils/global.images.dart';
@@ -8,10 +6,15 @@ import 'package:damamiflutter/view/mainpage.view.dart';
 import 'package:damamiflutter/view/widgets/global.textform.dart';
 import 'package:flutter/material.dart';
 
+class LoginView extends StatefulWidget {
+  @override
+  _LoginViewState createState() => _LoginViewState();
+}
 
-class LoginView extends StatelessWidget {
+class _LoginViewState extends State<LoginView> {
   final TextEditingController loginController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
+  bool isLoading = false;
 
   Future<bool> verificaLogin(String login, String senha) async {
     ApiService api = ApiService();
@@ -32,7 +35,7 @@ class LoginView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children:  [
+              children: [
                 const SizedBox(height: 20,),
                 Container(
                   alignment: Alignment.center,
@@ -40,7 +43,7 @@ class LoginView extends StatelessWidget {
                 ),
                 const SizedBox(height: 50,),
                 Column(
-                  children:  [
+                  children: [
                     Text(
                       'Entre com sua conta Damami',
                       style: TextStyle(
@@ -57,19 +60,19 @@ class LoginView extends StatelessWidget {
                       textInputType: TextInputType.text,
                       obscure: false,
                     ),
-                    const SizedBox(height:20,),
+                    const SizedBox(height: 20,),
                     GlobalTextForm(
                       controller: senhaController,
                       text: 'Senha',
                       textInputType: TextInputType.visiblePassword,
                       obscure: true,
                     ),
-                    const SizedBox(height:40,),
-                    TextButton(
-
-                      onPressed: () async {
-
-                        if(loginController.text.trim()=="" || senhaController.text.trim()==""){
+                    const SizedBox(height: 40,),
+                    ElevatedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                        if (loginController.text.trim() == "" || senhaController.text.trim() == "") {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -87,42 +90,57 @@ class LoginView extends StatelessWidget {
                               );
                             },
                           );
+                        } else {
+                          setState(() {
+                            isLoading = true;
+                          });
 
-                        }else
-                          {
-                        if(await verificaLogin(loginController.text,senhaController.text)){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+                          if (await verificaLogin(loginController.text, senhaController.text)) {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text("Dados Inválidos"),
+                                  content: Text("Login e/ou senha incorretos. Por favor, insira dados válidos de acesso."),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("Ok"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+
+                          setState(() {
+                            isLoading = false;
+                          });
                         }
-                        else {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text("Dados Inválidos"),
-                                content: Text("Login e/ou senha incorretos. Por favor, insira dados válidos de acesso."),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text("Ok"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          }
-                          }
                       },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(GlobalColors.mainColor),
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                        minimumSize: MaterialStateProperty.all<Size>( Size(MediaQuery.of(context).size.width-85, 55)),
+                        minimumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width - 85, 55)),
                       ),
-                      child: const Text("Login",style: TextStyle(fontSize: 17,fontWeight: FontWeight.w500,fontFamily: 'Roboto'),),
+                      child: isLoading
+                          ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                          : const Text(
+                        "Login",
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500, fontFamily: 'Roboto'),
+                      ),
                     ),
-
-                    const SizedBox(height:100,),
+                    const SizedBox(height: 100,),
                     Text(
                       'DAMAMI',
                       style: TextStyle(
@@ -132,8 +150,8 @@ class LoginView extends StatelessWidget {
                         color: GlobalColors.mainColor,
                       ),
                     ),
-                    const SizedBox(height:35,),
-                     Text(
+                    const SizedBox(height: 35,),
+                    Text(
                       'Sistema de Controle de Produção de Bananas',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,

@@ -1,3 +1,3 @@
 class Configs{
-  static String urlApi = "https://app.damami.com.br/";
+  static String urlApi = "https://alphaapi.techwayinfo.com.br/";
 }

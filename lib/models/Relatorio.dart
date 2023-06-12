@@ -1,6 +1,6 @@
 import 'package:damamiflutter/models/DadosGraficos.dart';
 class Relatorio {
-    int ano;
+   String ano;
    String nomeRelatorio;
    List<DadosGraficos> dadosGraficosList;
 

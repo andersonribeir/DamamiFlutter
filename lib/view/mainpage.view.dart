@@ -110,7 +110,7 @@ class _MainPageState extends State<MainPage> {
     final chartDataList = jsonData is List ? jsonData : [jsonData];
     return chartDataList
         .map((chartData) => Relatorio(
-      ano: chartData['ano'],
+      ano: chartData['ano'].toString(),
       nomeRelatorio: chartData['nomeRelatorio'],
       dadosGraficosList: (chartData['dadosGraficosList'] as List)
           .map((dadosGraficos) => DadosGraficos(
@@ -141,7 +141,7 @@ class _MainPageState extends State<MainPage> {
 
     for (var dadosList in dadosGraficosList) {
       if(dadosList.isNotEmpty){
-        Relatorio relatorio = Relatorio(ano: dadosList[0].value.toInt(),nomeRelatorio: "Resultados de Vendas por Cliente (em R\$)",dadosGraficosList: dadosList.sublist(1,dadosList.length-1));
+        Relatorio relatorio = Relatorio(ano: dadosList[0].value.toString().split(".")[0],nomeRelatorio: "Resultados de Vendas por Cliente (em R\$)",dadosGraficosList: dadosList.sublist(1,dadosList.length-1));
         relatorios.add(relatorio);
       }
 
@@ -502,12 +502,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -516,7 +516,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -585,8 +585,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -812,12 +812,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -826,7 +826,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -895,8 +895,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -1123,12 +1123,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -1137,7 +1137,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -1206,8 +1206,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -1436,12 +1436,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -1450,7 +1450,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -1519,8 +1519,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -1748,12 +1748,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -1762,7 +1762,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -1831,8 +1831,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -2061,12 +2061,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -2075,7 +2075,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -2144,8 +2144,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -2375,12 +2375,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -2389,7 +2389,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -2458,8 +2458,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -2688,12 +2688,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -2702,7 +2702,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -2771,8 +2771,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -2996,8 +2996,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
@@ -3136,12 +3136,12 @@ class _MainPageState extends State<MainPage> {
                                 dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
                                 color: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1)
                                     .withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                relatorio.ano %
+                                int.parse(relatorio.ano) %
                                     GlobalColors.graphicColors.length]
                                     .withOpacity(1),
                                 borderWidth: 2,
@@ -3150,7 +3150,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  relatorio.ano %
+                                  int.parse(relatorio.ano) %
                                       GlobalColors.graphicColors.length],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -3219,8 +3219,8 @@ class _MainPageState extends State<MainPage> {
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString(),
-                                color: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[relatorio.ano % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[int.parse(relatorio.ano) % GlobalColors.graphicColors.length].withOpacity(1),
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
