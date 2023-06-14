@@ -12,6 +12,7 @@ import 'package:damamiflutter/models/DadosGraficos.dart';
 import 'package:damamiflutter/utils/global.colors.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:intl/intl.dart';
+import 'dart:math';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   DateTime now = DateTime.now();
+  late Future<List<Relatorio>> _cachosLancados;
   late Future<List<Relatorio>> _cachosColhidos;
   late Future<List<Relatorio>> _cachosVendidos;
   late Future<List<Relatorio>> _valoresVendidos;
@@ -32,11 +34,13 @@ class _MainPageState extends State<MainPage> {
   late Future<List<Relatorio>> _resultados;
   late Future<List<Relatorio>> _perdas;
   late Future<List<Unidade>> _unidades;
+  late Future<String> _vendasClientes;
+
   final TextEditingController anoInicialInput = TextEditingController();
   FocusNode focusNodeInicial = FocusNode();
   final TextEditingController anoFinalInput = TextEditingController();
   FocusNode focusNodeFinal = FocusNode();
-  late Future<String> _vendasClientes;
+
   String inicioPesquisa = (DateTime.now().year-2).toString();
   String fimPesquisa = (DateTime.now().year).toString();
   double inicio = (DateTime.now().year-2).toDouble();
@@ -48,6 +52,9 @@ class _MainPageState extends State<MainPage> {
   late List<String> options = [];
   late List<String> indexOptions = [];
 
+  int corGrafico = 0;
+  int corLegenda = 0;
+  double quantidadeTabela1 = 0.0;
   @override
   void initState() {
     super.initState();
@@ -55,6 +62,7 @@ class _MainPageState extends State<MainPage> {
     anoInicialInput.text = inicioPesquisa;
     anoFinalInput.text = fimPesquisa;
     _unidades  = _fetchUnidades();
+    _cachosLancados = _fetchRelatorios("11", consultaUnidade, inicioPesquisa, fimPesquisa);
     _cachosColhidos = _fetchRelatorios("1", consultaUnidade, inicioPesquisa, fimPesquisa);
     _cachosVendidos = _fetchRelatorios("2",consultaUnidade,inicioPesquisa,fimPesquisa);
     _valoresVendidos = _fetchRelatoriosDecimais("3",consultaUnidade,inicioPesquisa,fimPesquisa);
@@ -150,7 +158,14 @@ class _MainPageState extends State<MainPage> {
 
     return relatorios;
   }
-
+  int _retornaProximoInteiroGrafico(){
+    corGrafico = corGrafico + 1;
+        return corGrafico;
+  }
+  int _retornaProximoInteiroLegenda(){
+    corLegenda = corLegenda + 1;
+    return corLegenda;
+  }
   void _openStringPicker(int initialIndex, Function(String, int, String) onSelectionChanged) {
     String selectedOptionTemp = selectedOption; // Create a temporary variable to store the selected option
     int selectedIndexTemp = selectedIndex;
@@ -286,6 +301,8 @@ class _MainPageState extends State<MainPage> {
                                           // Display the picker when tapped
                                           _openStringPicker(selectedIndex, (selectedOption, selectedIndex,consultaUnidade) {
                                             setState(() {
+                                              corGrafico = 0;
+                                              corLegenda = 0;
                                               this.selectedOption = selectedOption;
                                               this.selectedIndex = selectedIndex;
                                               this.consultaUnidade = indexOptions[selectedIndex].toString();
@@ -406,11 +423,14 @@ class _MainPageState extends State<MainPage> {
                                     }
                                     if(!erro){
                                       setState(() {
+                                        corGrafico = 0;
+                                        corLegenda = 0;
                                         inicio = int.parse(anoInicialInput.text).toDouble();
                                         fim = int.parse(anoFinalInput.text).toDouble();
                                         inicioPesquisa = anoInicialInput.text ;
                                         fimPesquisa = anoFinalInput.text;
                                         _cachosColhidos = _fetchRelatorios("1", consultaUnidade, inicioPesquisa, fimPesquisa);
+                                        _cachosLancados = _fetchRelatorios("11", consultaUnidade, inicioPesquisa, fimPesquisa);
                                         _cachosVendidos = _fetchRelatorios("2",consultaUnidade,inicioPesquisa,fimPesquisa);
                                         _valoresVendidos = _fetchRelatoriosDecimais("3",consultaUnidade,inicioPesquisa,fimPesquisa);
                                         _precoMedioCachoVendido = _fetchRelatoriosDecimais("4",consultaUnidade,inicioPesquisa,fimPesquisa);
@@ -444,6 +464,305 @@ class _MainPageState extends State<MainPage> {
                   const SizedBox(height: 10),
 
 
+                  //Cachos Lançados - Lote de Unidade
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Text(
+                      "Cachos Lançados - Lote de Unidade",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 2,
+                  ),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 300),
+                    child: FutureBuilder<List<Relatorio>>(
+                      future: _cachosLancados,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return SfCartesianChart(
+                            backgroundColor: Colors.white,
+                            primaryXAxis: CategoryAxis(
+                              labelStyle: const TextStyle(
+                                color: Colors
+                                    .black, // Defina a cor do texto do eixo X aqui
+                              ),
+                            ),
+                            primaryYAxis: NumericAxis(
+                              labelStyle: const TextStyle(
+                                color: Colors.black, // Define the Y-axis text color here
+                              ),
+                              // numberFormat: NumberFormat('###,##0.00', 'pt_BR'),
+                            ),
+                            legend: Legend(
+                                isVisible: true,
+                                position: LegendPosition.bottom,
+                                textStyle: const TextStyle(color: Colors.black),
+                                iconHeight: 15,
+                                iconWidth: 15,
+                                toggleSeriesVisibility: true),
+                            tooltipBehavior:
+                            TooltipBehavior(enable: true),
+                            series: snapshot.data!
+                                .map(
+                                  (relatorio) => AreaSeries<DadosGraficos, String>(
+                                name: relatorio.ano.trim(),
+                                dataSource: relatorio.dadosGraficosList,
+                                xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
+                                yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
+                                legendItemText: relatorio.ano.trim(),
+                                color: GlobalColors.graphicColors[
+                                _retornaProximoInteiroGrafico() % GlobalColors.graphicColors.length
+                                ].withOpacity(0.3),
+                                borderColor: GlobalColors.graphicColors[
+                                corGrafico % GlobalColors.graphicColors.length
+                                ],
+                                borderWidth: 2,
+                                enableTooltip: true,
+                                legendIconType: LegendIconType.circle,
+                                markerSettings: MarkerSettings(
+                                  isVisible: true,
+                                  color: GlobalColors.graphicColors[
+                                  _retornaProximoInteiroLegenda() % GlobalColors.graphicColors.length
+                                  ],
+                                  shape: DataMarkerType.circle,
+                                  height: 6,
+                                  width: 6,
+                                ),
+                              ),
+                            )
+                                .toList(),
+
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('${snapshot.error}'),
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Text("Cachos Lançados - Lote de Unidade",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
+                  ),
+                  const SizedBox(height: 2,),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 300),
+                    child: FutureBuilder<List<Relatorio>>(
+                      future: _cachosLancados,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return SfCartesianChart(
+                            backgroundColor: Colors.white,
+                            primaryXAxis: CategoryAxis(
+                              labelStyle: const TextStyle(
+                                color: Colors.black, // Defina a cor do texto do eixo X aqui
+                              ),
+                            ),
+                            primaryYAxis: NumericAxis(
+                              labelStyle: const TextStyle(
+                                color: Colors.black, // Define the Y-axis text color here
+                              ),
+
+                              // numberFormat: NumberFormat('###,##0.00', 'pt_BR'),
+                            ),
+                            legend: Legend(
+                                isVisible: true,
+                                position: LegendPosition.bottom,
+                                textStyle: const TextStyle(color: Colors.black),
+                                iconHeight: 15,
+                                iconWidth: 15,
+                                toggleSeriesVisibility: true
+                            ),
+                            tooltipBehavior: TooltipBehavior(enable: true),
+                            series: snapshot.data!
+                                .map(
+                                  (relatorio) => ColumnSeries<DadosGraficos, String>(
+                                name: relatorio.nomeRelatorio,
+                                dataSource: relatorio.dadosGraficosList,
+                                xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
+                                yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
+                                legendItemText: relatorio.ano.toString().trim(),
+                                color: GlobalColors.graphicColors[_retornaProximoInteiroGrafico() % GlobalColors.graphicColors.length].withOpacity(0.9),
+                                borderColor: GlobalColors.graphicColors[corGrafico % GlobalColors.graphicColors.length].withOpacity(1),
+                                borderWidth: 2,
+                                width: 0.8,
+                                enableTooltip: true,
+                                legendIconType: LegendIconType.circle,
+
+                              ),
+                            )
+                                .toList(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('${snapshot.error}'),
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Text("Cachos Lançados - Lote de Unidade",style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white : Colors.black),),
+                  ),
+                  const SizedBox(height: 2,),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minHeight:  180  ,maxHeight: 270),
+                    child: FutureBuilder<List<Relatorio>>(
+                      future: _cachosLancados,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final relatorios = snapshot.data!;
+
+                          return SfDataGrid(
+
+
+                            source: _RelatorioDataSource(relatorios,context),
+                            headerGridLinesVisibility: GridLinesVisibility.both,
+                            gridLinesVisibility: GridLinesVisibility.both,
+
+
+                            columns: [
+                              GridColumn(
+                                  columnName: 'ano',
+                                  label: Container(
+                                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                                    alignment: Alignment.center,
+                                    child: Text('Lote de Unidade'),
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'jan',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Jan'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'fev',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Fev'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'mar',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Mar'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'abr',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Abr'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'mai',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    child: Text('Mai'),
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'jun',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Jun'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'jul',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Jul'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'ago',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Ago'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'set',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Set'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'out',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Out'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'nov',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    child: Text('Nov'),
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'dez',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Dez'),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+                              GridColumn(
+                                  columnName: 'total',
+                                  label: Container(
+
+                                    alignment: Alignment.center,
+                                    color: GlobalColors.mainColor.withOpacity(0.8),
+                                    child: Text('Total',style: TextStyle(fontSize: orientation == Orientation.portrait ? 12 : 13),),
+                                  ),width: orientation == Orientation.landscape?  MediaQuery.of(context).size.width.toDouble()/14: MediaQuery.of(context).size.width.toDouble()/6.5),
+
+
+                            ],
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                      },
+                    ),),
+
+                  const SizedBox(height: 20),
                   //Cachos Colhidos
                   Padding(
                     padding: EdgeInsets.only(left: 10),
