@@ -52,12 +52,11 @@ class _MainPageState extends State<MainPage> {
   late List<String> options = [];
   late List<String> indexOptions = [];
 
-  int corGrafico = 0;
-  int corLegenda = 0;
-  double quantidadeTabela1 = 0.0;
+
   @override
   void initState() {
     super.initState();
+
     selectedOption = "Todas";
     anoInicialInput.text = inicioPesquisa;
     anoFinalInput.text = fimPesquisa;
@@ -75,6 +74,7 @@ class _MainPageState extends State<MainPage> {
     _vendasClientes = _fetchRelatoriosDinamicos("9",consultaUnidade,inicioPesquisa,fimPesquisa);
     _perdas = _fetchRelatorios("10", consultaUnidade, inicioPesquisa, fimPesquisa);
     _title = 'Damami App - '+ selectedOption.trim() +' - ' + inicioPesquisa.trim() + ' a ' + fimPesquisa.trim();
+
   }
 
   Future<List<Relatorio>> _fetchRelatorios(String relatorio, String unidade, String anoInicial, String anoFinal) async {
@@ -158,15 +158,9 @@ class _MainPageState extends State<MainPage> {
 
     return relatorios;
   }
-  int _retornaProximoInteiroGrafico(){
-    corGrafico = corGrafico + 1;
-        return corGrafico;
-  }
-  int _retornaProximoInteiroLegenda(){
-    corLegenda = corLegenda + 1;
-    return corLegenda;
-  }
+
   void _openStringPicker(int initialIndex, Function(String, int, String) onSelectionChanged) {
+
     String selectedOptionTemp = selectedOption; // Create a temporary variable to store the selected option
     int selectedIndexTemp = selectedIndex;
     showModalBottomSheet(
@@ -301,8 +295,7 @@ class _MainPageState extends State<MainPage> {
                                           // Display the picker when tapped
                                           _openStringPicker(selectedIndex, (selectedOption, selectedIndex,consultaUnidade) {
                                             setState(() {
-                                              corGrafico = 0;
-                                              corLegenda = 0;
+
                                               this.selectedOption = selectedOption;
                                               this.selectedIndex = selectedIndex;
                                               this.consultaUnidade = indexOptions[selectedIndex].toString();
@@ -423,8 +416,7 @@ class _MainPageState extends State<MainPage> {
                                     }
                                     if(!erro){
                                       setState(() {
-                                        corGrafico = 0;
-                                        corLegenda = 0;
+
                                         inicio = int.parse(anoInicialInput.text).toDouble();
                                         fim = int.parse(anoFinalInput.text).toDouble();
                                         inicioPesquisa = anoInicialInput.text ;
@@ -441,6 +433,8 @@ class _MainPageState extends State<MainPage> {
                                         _title = 'Damami App - '+ selectedOption.trim() +' - ' + inicioPesquisa.trim() + ' a ' + fimPesquisa.trim();
                                         _vendasClientes = _fetchRelatoriosDinamicos("9",consultaUnidade,inicioPesquisa,fimPesquisa);
                                         _perdas = _fetchRelatorios("10", consultaUnidade, inicioPesquisa, fimPesquisa);
+
+
                                       });
                                     }
 
@@ -515,10 +509,10 @@ class _MainPageState extends State<MainPage> {
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.trim(),
                                 color: GlobalColors.graphicColors[
-                                _retornaProximoInteiroGrafico() % GlobalColors.graphicColors.length
+                                relatorio.ano.hashCode * 7  % GlobalColors.graphicColors.length
                                 ].withOpacity(0.3),
                                 borderColor: GlobalColors.graphicColors[
-                                corGrafico % GlobalColors.graphicColors.length
+                                relatorio.ano.hashCode * 7  % GlobalColors.graphicColors.length
                                 ],
                                 borderWidth: 2,
                                 enableTooltip: true,
@@ -526,7 +520,7 @@ class _MainPageState extends State<MainPage> {
                                 markerSettings: MarkerSettings(
                                   isVisible: true,
                                   color: GlobalColors.graphicColors[
-                                  _retornaProximoInteiroLegenda() % GlobalColors.graphicColors.length
+                                  relatorio.ano.hashCode * 7  % GlobalColors.graphicColors.length
                                   ],
                                   shape: DataMarkerType.circle,
                                   height: 6,
@@ -585,22 +579,25 @@ class _MainPageState extends State<MainPage> {
                             ),
                             tooltipBehavior: TooltipBehavior(enable: true),
                             series: snapshot.data!
-                                .map(
-                                  (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                .map((relatorio) {
+                              final index = relatorio.ano.hashCode % GlobalColors.graphicColors.length;
+                              final color = GlobalColors.graphicColors[index].withOpacity(0.9);
+                              final borderColor = GlobalColors.graphicColors[index].withOpacity(1);
+
+                              return ColumnSeries<DadosGraficos, String>(
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
                                 legendItemText: relatorio.ano.toString().trim(),
-                                color: GlobalColors.graphicColors[_retornaProximoInteiroGrafico() % GlobalColors.graphicColors.length].withOpacity(0.9),
-                                borderColor: GlobalColors.graphicColors[corGrafico % GlobalColors.graphicColors.length].withOpacity(1),
+                                color: color,
+                                borderColor: borderColor,
                                 borderWidth: 2,
                                 width: 0.8,
                                 enableTooltip: true,
                                 legendIconType: LegendIconType.circle,
-
-                              ),
-                            )
+                              );
+                            })
                                 .toList(),
                           );
                         } else if (snapshot.hasError) {
@@ -813,7 +810,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -899,7 +896,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -1123,7 +1120,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -1209,7 +1206,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -1434,7 +1431,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -1520,7 +1517,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -1747,7 +1744,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -1833,7 +1830,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -2059,7 +2056,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -2145,7 +2142,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -2372,7 +2369,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -2458,7 +2455,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -2686,7 +2683,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -2772,7 +2769,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -2999,7 +2996,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -3085,7 +3082,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -3310,7 +3307,7 @@ class _MainPageState extends State<MainPage> {
                             series: relatorioMap!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -3447,7 +3444,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => AreaSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) =>
                                 dadosGraficos.key,
@@ -3533,7 +3530,7 @@ class _MainPageState extends State<MainPage> {
                             series: snapshot.data!
                                 .map(
                                   (relatorio) => ColumnSeries<DadosGraficos, String>(
-                                name: relatorio.nomeRelatorio,
+                                name: relatorio.ano.trim(),
                                 dataSource: relatorio.dadosGraficosList,
                                 xValueMapper: (dadosGraficos, _) => dadosGraficos.key,
                                 yValueMapper: (dadosGraficos, _) => dadosGraficos.value,
@@ -3718,6 +3715,7 @@ class _MainPageState extends State<MainPage> {
 }
 
 class _DataSource extends DataGridSource {
+
   var context;
   _DataSource(this._dataList,this.context);
 

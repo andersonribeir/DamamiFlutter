@@ -5,6 +5,6 @@ import 'package:hexcolor/hexcolor.dart';
 
 class GlobalColors{
 static HexColor mainColor = HexColor('#21ca51');
-static List<Color> graphicColors = [Colors.blue, Colors.green, Colors.purple,Colors.orange,Colors.teal,Colors.yellowAccent,Colors.red,Colors.pink,Colors.cyanAccent,Colors.grey,Colors.greenAccent,Colors.lightGreenAccent];
+static List<Color> graphicColors = [Colors.blue, Colors.green, Colors.purple,Colors.orange,Colors.yellowAccent,Colors.red,Colors.pink,Colors.cyanAccent,Colors.grey,Colors.greenAccent];
 
 }
