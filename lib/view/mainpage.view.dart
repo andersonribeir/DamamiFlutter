@@ -322,7 +322,7 @@ class _MainPageState extends State<MainPage> {
                                   );
                                 }
                               }),
-                              const SizedBox(width: 20),
+                              const SizedBox(width: 0),
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {
@@ -336,7 +336,7 @@ class _MainPageState extends State<MainPage> {
                                   obscure: false,
                                 ),
                               ),
-                              const SizedBox(width: 17,),
+                              const SizedBox(width: 13,),
                               Text('a',style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white: Colors.black),),
                               const SizedBox(width: 10,),
                               GestureDetector(
