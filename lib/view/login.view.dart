@@ -14,19 +14,27 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final TextEditingController loginController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
+  String uid = "";
   bool isLoading = false;
 
   Future<bool> verificaLogin(String login, String senha) async {
     ApiService api = ApiService();
-    return await api.LoginUser(login, senha);
+    String result = await api.LoginUser(login, senha);
+
+    if(result!="Erro"){
+      uid = result;
+      return true;
+
+    }else{return false;}
+
   }
 
   @override
   Widget build(BuildContext context) {
     final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
-    bool isDark = brightnessValue == Brightness.dark;
+    bool isDark = false;///brightnessValue == Brightness.dark;
 
-    return Scaffold(
+    return MediaQuery(data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0, boldText: false), child: Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       body: SingleChildScrollView(
         child: SafeArea(
@@ -96,7 +104,9 @@ class _LoginViewState extends State<LoginView> {
                           });
 
                           if (await verificaLogin(loginController.text, senhaController.text)) {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => MainPage()));
+                            Navigator.push(context,
+                                MaterialPageRoute(
+                                    builder: (context) => MainPage(uid: uid,)));
                           } else {
                             showDialog(
                               context: context,
@@ -167,6 +177,6 @@ class _LoginViewState extends State<LoginView> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

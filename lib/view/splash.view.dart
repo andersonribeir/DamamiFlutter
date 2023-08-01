@@ -11,7 +11,7 @@ class SplashView extends StatelessWidget {
   Widget build(BuildContext context) {
     //Using this for verifying light or dark theme in device - Anderson
     final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
-    bool isDark = brightnessValue == Brightness.dark;
+    bool isDark = false;///brightnessValue == Brightness.dark;
 
       Timer(const Duration(seconds: 2), () { Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>  LoginView())); });
 

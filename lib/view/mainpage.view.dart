@@ -15,7 +15,9 @@ import 'package:intl/intl.dart';
 import 'dart:math';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  final String uid; // Adicionando o parâmetro
+
+  const MainPage({Key? key, required this.uid}) : super(key: key);
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -99,7 +101,7 @@ class _MainPageState extends State<MainPage> {
   Future<List<Unidade>> _fetchUnidades() async {
     final apiService = ApiService();
     final chartDataString =
-    await apiService.GetUnidades();
+    await apiService.GetUnidades(widget.uid);
     final jsonData = json.decode(chartDataString);
     final unidadeList = jsonData is List ? jsonData : [jsonData];
     return unidadeList
@@ -225,11 +227,11 @@ class _MainPageState extends State<MainPage> {
     final Brightness brightnessValue =
         MediaQuery.of(context).platformBrightness;
     final Orientation orientation = MediaQuery.of(context).orientation;
-    bool isDark = brightnessValue == Brightness.dark;
+    bool isDark = false;///brightnessValue == Brightness.dark;
 
     final ScrollController _scrollController = ScrollController();
     int selectedValue = 0;
-    return Scaffold(
+    return MediaQuery(data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0, boldText: false), child: Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
         centerTitle: true,
@@ -268,184 +270,184 @@ class _MainPageState extends State<MainPage> {
                   SizedBox(
                     height: 40,
                     child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              FutureBuilder<List<Unidade>>(future: _unidades,builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  options = [];
-                                  indexOptions = [];
-                                  snapshot.data!.forEach((unidade) {
-                                    options.add(unidade.nome);
-                                    indexOptions.add(unidade.id.toString());
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        FutureBuilder<List<Unidade>>(future: _unidades,builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            options = [];
+                            indexOptions = [];
+                            snapshot.data!.forEach((unidade) {
+                              options.add(unidade.nome);
+                              indexOptions.add(unidade.id.toString());
 
-                                  });
-                                  return Container(
-                                    height: 33,
-                                    width: 142,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.2),
-                                          width: 1.0,
-                                        ),
-                                        borderRadius: BorderRadius.circular(4.0),
-                                      ),
-                                      child: TextButton(
-                                        onPressed: () {
-                                          // Display the picker when tapped
-                                          _openStringPicker(selectedIndex, (selectedOption, selectedIndex,consultaUnidade) {
-                                            setState(() {
-
-                                              this.selectedOption = selectedOption;
-                                              this.selectedIndex = selectedIndex;
-                                              this.consultaUnidade = indexOptions[selectedIndex].toString();
-                                            });
-                                          });
-                                        },
-                                        style: ButtonStyle(
-                                          alignment: Alignment.center, // Set the alignment to center
-                                        ),
-                                        child: Text(
-                                          selectedOption,
-                                          style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                } else if (snapshot.hasError) {
-                                  return Center(
-                                    child: Text('${snapshot.error}'),
-                                  );
-                                } else {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                              }),
-                              const SizedBox(width: 0),
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  FocusScope.of(context).requestFocus(FocusNode());
-                                },
-                                child: GlobalSearchTextForm(
-                                  controller: anoInicialInput,
-                                  text: '',
-                                  focusNode: focusNodeInicial,
-                                  textInputType: TextInputType.number,
-                                  obscure: false,
-                                ),
-                              ),
-                              const SizedBox(width: 13,),
-                              Text('a',style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white: Colors.black),),
-                              const SizedBox(width: 10,),
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  FocusScope.of(context).requestFocus(FocusNode());
-                                },
-                                child: GlobalSearchTextForm(
-                                  controller: anoFinalInput,
-                                  text: '',
-                                  focusNode: focusNodeFinal,
-                                  textInputType: TextInputType.number,
-                                  obscure: false,
-                                ),
-                              ),
-                              const SizedBox(width: 15,),
-
-                              Container(
+                            });
+                            return Container(
+                              height: 33,
+                              width: 142,
+                              child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isDark ? Colors.grey.withOpacity(0.1) : Colors.white.withOpacity(0.1),
-                                      spreadRadius: 2,
-                                      blurRadius: 5,
-                                      offset: Offset(0, 2), // changes the position of the shadow
-                                    ),
-                                  ],
+                                  border: Border.all(
+                                    color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.2),
+                                    width: 1.0,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4.0),
                                 ),
-                                child: IconButton(
-                                  icon: Icon(Icons.search),
-                                  color: isDark ? Colors.white : Colors.black,
+                                child: TextButton(
                                   onPressed: () {
-                                    bool erro = false;
-                                    FocusScope.of(context).requestFocus(FocusNode());
-                                    if(anoInicialInput.text.trim()=="" || anoFinalInput.text.trim()==""){
-                                      erro = true;
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text("Dados não inseridos."),
-                                            content: Text("Por favor, insira os dados para consulta."),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text("Ok"),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-
-                                    }
-                                    if(int.parse(anoInicialInput.text.trim()) > int.parse(anoFinalInput.text.trim())){
-                                      erro = true;
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text("Dados inválidos."),
-                                            content: Text("Por favor, corrija o período da consulta."),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text("Ok"),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-
-                                    }
-                                    if(!erro){
+                                    // Display the picker when tapped
+                                    _openStringPicker(selectedIndex, (selectedOption, selectedIndex,consultaUnidade) {
                                       setState(() {
 
-                                        inicio = int.parse(anoInicialInput.text).toDouble();
-                                        fim = int.parse(anoFinalInput.text).toDouble();
-                                        inicioPesquisa = anoInicialInput.text ;
-                                        fimPesquisa = anoFinalInput.text;
-                                        _cachosColhidos = _fetchRelatorios("1", consultaUnidade, inicioPesquisa, fimPesquisa);
-                                        _cachosLancados = _fetchRelatorios("11", consultaUnidade, inicioPesquisa, fimPesquisa);
-                                        _cachosVendidos = _fetchRelatorios("2",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _valoresVendidos = _fetchRelatoriosDecimais("3",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _precoMedioCachoVendido = _fetchRelatoriosDecimais("4",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _pesoMedioCachoVendido = _fetchRelatoriosDecimais("5",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _despesas = _fetchRelatoriosDecimais("6",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _receitas = _fetchRelatoriosDecimais("7",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _resultados = _fetchRelatoriosDecimais("8",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _title = 'Damami App - '+ selectedOption.trim() +' - ' + inicioPesquisa.trim() + ' a ' + fimPesquisa.trim();
-                                        _vendasClientes = _fetchRelatoriosDinamicos("9",consultaUnidade,inicioPesquisa,fimPesquisa);
-                                        _perdas = _fetchRelatorios("10", consultaUnidade, inicioPesquisa, fimPesquisa);
-
-
+                                        this.selectedOption = selectedOption;
+                                        this.selectedIndex = selectedIndex;
+                                        this.consultaUnidade = indexOptions[selectedIndex].toString();
                                       });
-                                    }
-
-
+                                    });
                                   },
+                                  style: ButtonStyle(
+                                    alignment: Alignment.center, // Set the alignment to center
+                                  ),
+                                  child: Text(
+                                    selectedOption,
+                                    style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black),
+                                  ),
                                 ),
-                              )
+                              ),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('${snapshot.error}'),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        }),
+                        const SizedBox(width: 0),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                          child: GlobalSearchTextForm(
+                            controller: anoInicialInput,
+                            text: '',
+                            focusNode: focusNodeInicial,
+                            textInputType: TextInputType.number,
+                            obscure: false,
+                          ),
+                        ),
+                        const SizedBox(width: 13,),
+                        Text('a',style: TextStyle(fontWeight: FontWeight.bold,color: isDark ? Colors.white: Colors.black),),
+                        const SizedBox(width: 10,),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
+                          child: GlobalSearchTextForm(
+                            controller: anoFinalInput,
+                            text: '',
+                            focusNode: focusNodeFinal,
+                            textInputType: TextInputType.number,
+                            obscure: false,
+                          ),
+                        ),
+                        const SizedBox(width: 15,),
 
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? Colors.grey.withOpacity(0.1) : Colors.white.withOpacity(0.1),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: Offset(0, 2), // changes the position of the shadow
+                              ),
                             ],
                           ),
-              ),
+                          child: IconButton(
+                            icon: Icon(Icons.search),
+                            color: isDark ? Colors.white : Colors.black,
+                            onPressed: () {
+                              bool erro = false;
+                              FocusScope.of(context).requestFocus(FocusNode());
+                              if(anoInicialInput.text.trim()=="" || anoFinalInput.text.trim()==""){
+                                erro = true;
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text("Dados não inseridos."),
+                                      content: Text("Por favor, insira os dados para consulta."),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text("Ok"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                              }
+                              if(int.parse(anoInicialInput.text.trim()) > int.parse(anoFinalInput.text.trim())){
+                                erro = true;
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text("Dados inválidos."),
+                                      content: Text("Por favor, corrija o período da consulta."),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text("Ok"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                              }
+                              if(!erro){
+                                setState(() {
+
+                                  inicio = int.parse(anoInicialInput.text).toDouble();
+                                  fim = int.parse(anoFinalInput.text).toDouble();
+                                  inicioPesquisa = anoInicialInput.text ;
+                                  fimPesquisa = anoFinalInput.text;
+                                  _cachosColhidos = _fetchRelatorios("1", consultaUnidade, inicioPesquisa, fimPesquisa);
+                                  _cachosLancados = _fetchRelatorios("11", consultaUnidade, inicioPesquisa, fimPesquisa);
+                                  _cachosVendidos = _fetchRelatorios("2",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _valoresVendidos = _fetchRelatoriosDecimais("3",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _precoMedioCachoVendido = _fetchRelatoriosDecimais("4",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _pesoMedioCachoVendido = _fetchRelatoriosDecimais("5",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _despesas = _fetchRelatoriosDecimais("6",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _receitas = _fetchRelatoriosDecimais("7",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _resultados = _fetchRelatoriosDecimais("8",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _title = 'Damami App - '+ selectedOption.trim() +' - ' + inicioPesquisa.trim() + ' a ' + fimPesquisa.trim();
+                                  _vendasClientes = _fetchRelatoriosDinamicos("9",consultaUnidade,inicioPesquisa,fimPesquisa);
+                                  _perdas = _fetchRelatorios("10", consultaUnidade, inicioPesquisa, fimPesquisa);
+
+
+                                });
+                              }
+
+
+                            },
+                          ),
+                        )
+
+                      ],
+                    ),
+                  ),
 
                   const SizedBox(height: 10),
                   Container(color: Colors.black.withOpacity(0.2),
@@ -3707,7 +3709,7 @@ class _MainPageState extends State<MainPage> {
               )),
         ),
       ),
-    );
+    ));
 
 
   }

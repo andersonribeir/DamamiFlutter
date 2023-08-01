@@ -7,7 +7,7 @@ import 'package:damamiflutter/utils/global.configs.dart';
 
 class ApiService{
 
-  Future<bool> LoginUser(String loginInput, String senhaInput) async {
+  Future<String> LoginUser(String loginInput, String senhaInput) async {
     Login login =  Login(email: loginInput,senha: senhaInput);
     var body = login.toJson();
 
@@ -16,13 +16,20 @@ class ApiService{
     HttpClientRequest request = await httpClient.postUrl(Uri.parse("${Configs.urlApi}api/Pessoa/Login"));
     request.headers.set('Content-Type', 'application/json');
     String jsonBody = json.encode(body);
+
     request.write(jsonBody);
 
     HttpClientResponse response = await request.close();
     if (response.statusCode == HttpStatus.ok) {
-      return true;
+      String responseText = await response.transform(utf8.decoder).join();
+
+      //Converte a string JSON em um objeto Dart (Map<String, dynamic>).
+      Map<String, dynamic> jsonData = jsonDecode(responseText);
+
+      int userId = jsonData['user_Id'];
+      return userId.toString();
     }else{
-      return false;
+      return "Erro";
     }
 
   }
@@ -41,11 +48,11 @@ class ApiService{
     }
   }
 
-  Future<String> GetUnidades() async {
+  Future<String> GetUnidades(String uid) async {
 
     HttpClient httpClient = HttpClient();
     httpClient.badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
-    HttpClientRequest request = await httpClient.getUrl(Uri.parse("${Configs.urlApi}api/Chart/GetUnidades/1"));
+    HttpClientRequest request = await httpClient.getUrl(Uri.parse("${Configs.urlApi}api/Chart/GetUnidades/$uid"));
 
     HttpClientResponse response = await request.close();
     String responseBody = await response.transform(utf8.decoder).join();
