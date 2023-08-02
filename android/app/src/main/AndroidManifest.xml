@@ -3,10 +3,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
    <application
-        android:label="damamiflutter"
-        android:name="${applicationName}"
+        android:label="Damami App"
         android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_round"
 
    >
 
